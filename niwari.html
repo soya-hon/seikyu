@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>インボイス2割特例 納税額計算ツール｜簡易課税・原則課税と比較（令和8年分まで）</title>
+<meta name="description" content="インボイス登録した個人事業者・クリエイター向けに、消費税の2割特例・簡易課税・原則課税の納税額を無料で比較計算。国税と地方消費税の内訳も表示。個人の2割特例は令和8年分まで、令和9・10年分は3割特例。国税庁の計算例と一致を確認済み。">
+<link rel="canonical" href="https://soya-hon.github.io/seikyu/niwari.html">
+<meta property="og:title" content="インボイス2割特例 納税額計算ツール（令和8年分まで）">
+<meta property="og:description" content="2割特例・簡易課税・原則課税の消費税額を比較。国税・地方消費税の内訳つき。登録不要・ブラウザ完結。">
+<meta property="og:type" content="website">
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#1d2330;--sub:#5b6474;--line:#d9dde4;--accent:#1f6feb;--ok:#1a7f37}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171c;--card:#1c2027;--ink:#e6e9ee;--sub:#9aa3b2;--line:#2f3540;--accent:#4c8dff;--ok:#4ac26b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Noto Sans JP","Yu Gothic UI",sans-serif;line-height:1.7}
+.wrap{max-width:760px;margin:auto;padding:20px 16px 40px}
+h1{font-size:1.35rem;margin-bottom:4px}
+.lead{color:var(--sub);margin-top:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:14px}
+label{display:block;font-size:.85rem;color:var(--sub);margin-top:10px}
+input,select{width:100%;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);font:inherit}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:560px){.row{grid-template-columns:1fr}}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;margin-top:12px}
+td,th{padding:8px;border-bottom:1px solid var(--line);text-align:left}
+th.n,td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.total td{font-weight:bold}
+td.best{color:var(--ok);font-weight:bold}
+h2{font-size:1.05rem;border-left:4px solid var(--accent);padding-left:8px;margin-top:24px}
+h3{font-size:1rem}
+a{color:var(--accent)}
+.note{font-size:.88rem;color:var(--sub)}
+ul.pts{padding-left:1.2em;margin:8px 0}
+ul.pts li{margin:4px 0}
+.kit{border:2px dashed var(--accent);border-radius:10px;padding:16px;margin-top:24px}
+.kit strong{color:var(--accent)}
+footer{margin-top:28px;color:var(--sub);font-size:.85rem}
+footer a{color:var(--sub)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>インボイス2割特例 納税額計算ツール</h1>
+<p class="lead">インボイス発行事業者の登録を機に課税事業者になった個人事業者・クリエイター向けに、消費税の<b>2割特例</b>・<b>簡易課税</b>・<b>原則課税（一般課税）</b>の納税額を比較します。<b>個人が2割特例を使えるのは令和8年分（2026年1〜12月）の申告まで</b>です。</p>
+
+<div class="card">
+<p class="note" style="margin-top:0">金額は1年分（インボイス登録日より前の免税期間分は除く）の<b>税込</b>金額を入力してください。</p>
+<div class="row">
+<div><label>課税売上高 10%対象（税込、円）</label><input id="s10" type="number" min="0" inputmode="numeric" value="3300000"></div>
+<div><label>課税売上高 8%対象（税込、円）</label><input id="s8" type="number" min="0" inputmode="numeric" value="0"></div>
+</div>
+<div class="row">
+<div><label>売上の返品・値引き 10%（税込、任意）</label><input id="r10" type="number" min="0" inputmode="numeric" value="0"></div>
+<div><label>売上の返品・値引き 8%（税込、任意）</label><input id="r8" type="number" min="0" inputmode="numeric" value="0"></div>
+</div>
+<h3>簡易課税の事業区分</h3>
+<select id="kubun">
+<option value="90">第1種事業（卸売業）みなし仕入率90%</option>
+<option value="80">第2種事業（小売業 等）80%</option>
+<option value="70">第3種事業（製造業・建設業 等）70%</option>
+<option value="60">第4種事業（飲食店業 等）60%</option>
+<option value="50" selected>第5種事業（サービス業・情報通信業 等）50%</option>
+<option value="40">第6種事業（不動産業）40%</option>
+</select>
+<h3>原則課税の仕入れ（インボイス等を保存している課税仕入れ）</h3>
+<div class="row">
+<div><label>課税仕入高 10%（税込、円）</label><input id="p10" type="number" min="0" inputmode="numeric" value="550000"></div>
+<div><label>課税仕入高 8%（税込、円）</label><input id="p8" type="number" min="0" inputmode="numeric" value="0"></div>
+</div>
+<div class="tbl"><table id="out"></table></div>
+<p class="note" id="summary"></p>
+</div>
+
+<h2>計算方法（国税庁の申告書・付表と同じ手順）</h2>
+<ol class="note">
+<li>税率ごとに税込売上を税抜にし（10%は×100/110、8%は×100/108、1円未満切捨て）、<b>千円未満を切り捨てて課税標準額</b>とします。</li>
+<li>課税標準額に<b>国税分の税率（7.8%／6.24%）</b>を掛けて消費税額（国税）を出します。</li>
+<li>返品・値引きがあれば、その税込額×7.8/110（8%は×6.24/108）を返還等対価に係る税額として差し引きます。</li>
+<li>控除する仕入税額を計算：<b>2割特例</b>＝（消費税額−返還等税額）×80%、<b>簡易課税</b>＝同×みなし仕入率、<b>原則課税</b>＝仕入の税込額×7.8/110（8%は×6.24/108）。</li>
+<li>差引税額（国税）は<b>百円未満切捨て</b>。<b>地方消費税＝国税の差引税額×22/78</b>（百円未満切捨て）。合計が納付額です。</li>
+</ol>
+<p class="note">国税庁「２割特例用 消費税及び地方消費税の確定申告の手引き」の設例（税込課税売上6,609,330円、値引き192,900円）で、本ツールの計算結果（国税90,900円・地方消費税25,600円）が手引きの記載と一致することを確認しています。</p>
+
+<h2>2割特例・3割特例の期限と対象</h2>
+<ul class="pts">
+<li><b>2割特例</b>：インボイス制度を機に免税事業者からインボイス発行事業者になった事業者が、<b>令和5年10月1日から令和8年9月30日までの日の属する課税期間</b>に使える特例です。個人事業者（課税期間＝暦年）は<b>令和8年分の申告まで</b>使えます。事前の届出は不要で、申告書に適用する旨を付記します。</li>
+<li><b>3割特例（個人のみ）</b>：令和8年度税制改正で創設。個人事業者のインボイス発行事業者は<b>令和9年分・令和10年分</b>の申告で、納税額を売上税額の3割（控除額＝売上税額×70%）にできます。法人は対象外です。令和11年分以降は使えません。</li>
+<li>基準期間（2年前）の課税売上高が1,000万円を超える年など、登録と関係なく課税事業者になる年は2割特例・3割特例とも使えません。</li>
+<li>簡易課税は原則として「消費税簡易課税制度選択届出書」の事前提出が必要です。2割特例・3割特例を適用した翌年から簡易課税にする場合は、その年の確定申告期限までの提出でよい特例があります。簡易課税を選ぶと原則2年間継続適用です。</li>
+<li>原則課税では仕入税額が売上税額を上回ると還付になりますが、2割特例・簡易課税では通常、還付は生じません。</li>
+</ul>
+<p class="note">BOOTHでのデジタルコンテンツ販売などの事業区分は取引内容で異なります。区分が分からない場合は税務署にご確認ください。</p>
+
+<div class="kit">
+<strong>（有料）BOOTH売上 集計Excelキット　準備中</strong>
+<p class="note" style="margin:6px 0 0">BOOTHの売上CSVから税率別の課税売上・手数料を集計し、消費税申告に使う数字をまとめるExcelキットを準備中です。</p>
+</div>
+
+<h2>出典（国税庁）</h2>
+<ul class="pts note">
+<li><a href="https://www.nta.go.jp/taxes/shiraberu/zeimokubetsu/shohi/keigenzeiritsu/invoice_2tokurei.htm" rel="noopener">２割特例 特設ページ</a></li>
+<li><a href="https://www.nta.go.jp/publication/pamph/pdf/0023008-043.pdf" rel="noopener">２割特例用 消費税及び地方消費税の確定申告の手引き（PDF、設例）</a></li>
+<li><a href="https://www.nta.go.jp/taxes/shiraberu/zeimokubetsu/shohi/keigenzeiritsu/invoice-review/index.htm" rel="noopener">インボイス制度特設サイト「令和８年度税制改正特集」（3割特例）</a></li>
+<li><a href="https://www.nta.go.jp/taxes/shiraberu/zeimokubetsu/shohi/keigenzeiritsu/invoice-review/pdf/0026004-099-01-1.pdf" rel="noopener">インボイス制度に関する令和８年度税制改正について（PDF）</a></li>
+<li><a href="https://www.nta.go.jp/taxes/shiraberu/taxanswer/shohi/6505.htm" rel="noopener">No.6505 簡易課税制度</a></li>
+</ul>
+<p class="note">※本ツールは一般的な計算による概算です（貸倒れ、中間納付、旧税率、仕入の積上げ計算、課税売上割合95%未満、簡易課税の複数事業区分などは考慮していません）。個別の判断は税務署・税理士にご確認ください。本サイトでは個別のご相談はお受けしていません。2026年10月時点の法令・国税庁資料に基づいています。</p>
+
+<footer>関連ツール：<a href="./">無料 請求書作成ツール（インボイス対応）</a> ／ <a href="booth-shinkoku.html">BOOTH売上 確定申告いる？判定</a> ／ <a href="tedori.html">源泉徴収 手取り逆算</a></footer>
+</div>
+
+<script>
+// ===== LOGIC-START（純関数：tests/niwari.test.mjs から読み込んでテスト） =====
+/** 整数演算で端数処理（浮動小数の誤差を避ける） */
+const floorDiv = (a, b) => Math.floor(a / b);
+const toInt = v => Math.max(0, Math.floor(Number(v) || 0));
+/** 売上側の共通計算：課税標準額・消費税額（国税）・返還等対価に係る税額 */
+function salesTax({ s10 = 0, s8 = 0, r10 = 0, r8 = 0 } = {}) {
+  s10 = toInt(s10); s8 = toInt(s8); r10 = toInt(r10); r8 = toInt(r8);
+  const ex10 = floorDiv(s10 * 100, 110), ex8 = floorDiv(s8 * 100, 108);   // 税抜（1円未満切捨て）
+  const base10 = floorDiv(ex10, 1000) * 1000, base8 = floorDiv(ex8, 1000) * 1000; // 課税標準額（千円未満切捨て）
+  const tax10 = floorDiv(base10 * 78, 1000), tax8 = floorDiv(base8 * 624, 10000);  // 7.8% / 6.24%
+  const ret = floorDiv(r10 * 78, 1100) + floorDiv(r8 * 624, 10800);               // ×7.8/110, ×6.24/108
+  const tax = tax10 + tax8;
+  return { ex10, ex8, base: base10 + base8, base10, base8, tax, ret, kiso: tax - ret };
+}
+/** 差引税額（国税）と地方消費税。控除額 deduct は仕入控除税額（返還等税額は含めない） */
+function finish(st, deduct) {
+  const net = st.tax - deduct - st.ret;
+  let national, local;
+  if (net >= 0) {
+    national = floorDiv(net, 100) * 100;            // 百円未満切捨て
+    local = floorDiv(national * 22, 78 * 100) * 100; // ×22/78、百円未満切捨て
+  } else {                                           // 控除不足還付（原則課税のみ）
+    national = net;
+    local = -floorDiv(-net * 22, 78);
+  }
+  return { deduct, national, local, total: national + local };
+}
+/** 2割特例：特別控除税額＝（消費税額−返還等税額）×80% */
+function niwari(input) { const st = salesTax(input); return { ...finish(st, floorDiv(Math.max(0, st.kiso) * 80, 100)), st }; }
+/** 3割特例（個人の令和9・10年分）：控除額＝（消費税額−返還等税額）×70% */
+function sanwari(input) { const st = salesTax(input); return { ...finish(st, floorDiv(Math.max(0, st.kiso) * 70, 100)), st }; }
+/** 簡易課税：控除対象仕入税額＝（消費税額−返還等税額）×みなし仕入率（rate は%の整数） */
+function kani(input, rate) { const st = salesTax(input); return { ...finish(st, floorDiv(Math.max(0, st.kiso) * toInt(rate), 100)), st }; }
+/** 原則課税（割戻し計算）：仕入税額＝税込課税仕入×7.8/110 ＋ ×6.24/108 */
+function gensoku(input) {
+  const st = salesTax(input);
+  const p10 = toInt(input.p10), p8 = toInt(input.p8);
+  const deduct = floorDiv(p10 * 78, 1100) + floorDiv(p8 * 624, 10800);
+  return { ...finish(st, deduct), st };
+}
+// ===== LOGIC-END =====
+
+const $ = id => document.getElementById(id);
+const yen = v => (v < 0 ? "−" : "") + Math.abs(Math.round(v)).toLocaleString("ja-JP") + "円";
+const ids = ["s10", "s8", "r10", "r8", "kubun", "p10", "p8"];
+function run() {
+  const inp = {}; ids.forEach(i => inp[i] = $(i).value);
+  const rate = +inp.kubun;
+  const cols = [["2割特例（〜令和8年分）", niwari(inp)], [`簡易課税（${rate}%）`, kani(inp, rate)], ["原則課税", gensoku(inp)], ["参考：3割特例（令和9・10年分）", sanwari(inp)]];
+  const st = cols[0][1].st;
+  const min = Math.min(...cols.slice(0, 3).map(c => c[1].total));
+  const row = (label, f, cls = "") => `<tr class="${cls}"><td>${label}</td>${cols.map(([, r], i) => `<td class="n${cls === "total" && i < 3 && r.total === min ? " best" : ""}">${f(r)}</td>`).join("")}</tr>`;
+  $("out").innerHTML = `<tr><th>項目</th>${cols.map(c => `<th class="n">${c[0]}</th>`).join("")}</tr>
+  <tr><td>課税標準額</td>${cols.map(() => `<td class="n">${yen(st.base)}</td>`).join("")}</tr>
+  <tr><td>消費税額（国税7.8%・6.24%）</td>${cols.map(() => `<td class="n">${yen(st.tax)}</td>`).join("")}</tr>
+  ${st.ret ? `<tr><td>返還等対価に係る税額</td>${cols.map(() => `<td class="n">−${yen(st.ret)}</td>`).join("")}</tr>` : ""}
+  ${row("控除する仕入税額", r => "−" + yen(r.deduct))}
+  ${row("納付税額：消費税（国税）", r => yen(r.national))}
+  ${row("納付税額：地方消費税", r => yen(r.local))}
+  ${row("合計（納付額）", r => yen(r.total), "total")}`;
+  const names = ["2割特例", "簡易課税", "原則課税"];
+  const best = cols.slice(0, 3).map((c, i) => c[1].total === min ? names[i] : null).filter(Boolean);
+  const s = (+inp.s10 || 0) + (+inp.s8 || 0);
+  $("summary").innerHTML = `令和8年分では <b>${best.join("・")}</b> の納付額が最も少なくなります（${yen(min)}）。` +
+    (s > 0 ? `税込売上に対する2割特例の納付額は約${(cols[0][1].total / s * 100).toFixed(2)}%です。` : "") +
+    "簡易課税は事前の届出、原則課税はインボイス等の保存が前提です。";
+}
+ids.forEach(i => $(i).addEventListener("input", run));
+run();
+</script>
+</body>
+</html>

@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BOOTH売上 確定申告いる？判定ツール｜令和8年分の基礎控除改正に対応</title>
+<meta name="description" content="BOOTHやVRChat向けアバター・アセット販売の売上で確定申告が必要かを無料で判定。会社員の20万円ルール、令和8年分（2026年分）の基礎控除104万円・給与所得控除74万円、扶養の目安、消費税の1,000万円基準を解説。BOOTHの売上CSVをブラウザ内で集計（外部送信なし）。">
+<link rel="canonical" href="https://soya-hon.github.io/seikyu/booth-shinkoku.html">
+<meta property="og:title" content="BOOTH売上 確定申告いる？判定ツール（令和8年分対応）">
+<meta property="og:description" content="BOOTH・VRChatクリエイター向け。売上・経費を入れるだけで所得税の確定申告の要否と扶養の目安を判定。CSV集計もブラウザ内で完結。">
+<meta property="og:type" content="website">
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#1d2330;--sub:#5b6474;--line:#d9dde4;--accent:#1f6feb;--accent2:#0b4fbf;--ok:#1a7f37;--ng:#c4321c;--warn:#9a6700}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171c;--card:#1c2027;--ink:#e6e9ee;--sub:#9aa3b2;--line:#2f3540;--accent:#4c8dff;--accent2:#78a8ff;--ok:#4ac26b;--ng:#ff7b6b;--warn:#e3b341}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Noto Sans JP","Yu Gothic UI",sans-serif;line-height:1.7}
+.wrap{max-width:760px;margin:auto;padding:20px 16px 40px}
+h1{font-size:1.35rem;margin-bottom:4px}
+.lead{color:var(--sub);margin-top:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:14px}
+label{display:block;font-size:.85rem;color:var(--sub);margin-top:10px}
+label.chk{display:flex;gap:8px;align-items:center;color:var(--ink)}
+label.chk input{width:auto}
+input,select{width:100%;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);font:inherit}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:560px){.row{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;margin-top:12px}
+td,th{padding:8px;border-bottom:1px solid var(--line);text-align:left}
+td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+h2{font-size:1.05rem;border-left:4px solid var(--accent);padding-left:8px;margin-top:24px}
+a{color:var(--accent)}
+.verdict{font-size:1.15rem;font-weight:bold;padding:12px;border-radius:8px;border:2px solid var(--line);margin-top:12px}
+.verdict.need{border-color:var(--ng);color:var(--ng)}
+.verdict.noneed{border-color:var(--ok);color:var(--ok)}
+.note{font-size:.88rem;color:var(--sub)}
+ul.pts{padding-left:1.2em;margin:8px 0}
+ul.pts li{margin:4px 0}
+.warn{color:var(--warn)}
+button{cursor:pointer;border:0;border-radius:6px;padding:9px 14px;font:inherit;font-size:.9rem}
+.btn{background:var(--accent);color:#fff}.btn:hover{background:var(--accent2)}
+.btn:disabled{opacity:.5;cursor:default}
+.drop{border:2px dashed var(--line);border-radius:8px;padding:14px;text-align:center;color:var(--sub);margin-top:10px}
+.preview{overflow-x:auto;font-size:.8rem}
+.preview table{margin-top:6px}
+.preview td,.preview th{white-space:nowrap;padding:4px 8px}
+.kit{border:2px dashed var(--accent);border-radius:10px;padding:16px;margin-top:24px}
+.kit strong{color:var(--accent)}
+footer{margin-top:28px;color:var(--sub);font-size:.85rem}
+footer a{color:var(--sub)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>BOOTH売上 確定申告いる？判定ツール</h1>
+<p class="lead">BOOTH・VRChat向けアバター/アセット販売などの副収入について、<b>令和8年分（2026年1〜12月）</b>の所得税の確定申告が必要かを判定します。登録不要・入力内容はどこにも送信されません。</p>
+
+<div class="card">
+<label>あなたの立場</label>
+<select id="status">
+<option value="employee">会社員・公務員・パート（給与あり）</option>
+<option value="student">学生（アルバイト給与ありの場合も含む）</option>
+<option value="none">専業クリエイター・フリーランス・無職（給与なし）</option>
+</select>
+<div class="row">
+<div><label>年間の給与収入（額面・源泉徴収票の支払金額、円）</label><input id="salary" type="number" min="0" inputmode="numeric" value="4000000"></div>
+<div><label>給与の年末調整</label><select id="nencho"><option value="1">勤務先1か所で年末調整を受ける</option><option value="0">受けない／2か所以上から給与あり</option></select></div>
+</div>
+<div class="row">
+<div><label>BOOTH等の年間売上（手数料を引く前、円）</label><input id="sales" type="number" min="0" inputmode="numeric" value="300000"></div>
+<div><label>BOOTHの販売手数料・振込手数料（円）</label><input id="fee" type="number" min="0" inputmode="numeric" value="20000"></div>
+</div>
+<div class="row">
+<div><label>その他の経費（ソフト・素材・PC按分など、円）</label><input id="expense" type="number" min="0" inputmode="numeric" value="50000"></div>
+<div><label>他の副収入の所得（収入−経費、円）</label><input id="other" type="number" min="0" inputmode="numeric" value="0"></div>
+</div>
+<label>（給与なし／年末調整なしの方）自分で払った国民年金・国民健康保険料など（円・任意）</label><input id="shaho" type="number" min="0" inputmode="numeric" value="0">
+<div id="verdict" class="verdict" role="status" aria-live="polite"></div>
+<table id="calc"></table>
+<ul class="pts" id="notes"></ul>
+</div>
+
+<h2>BOOTHの売上CSVから自動集計</h2>
+<div class="card">
+<p class="note" style="margin-top:0">BOOTHの管理画面（売上・振込）からダウンロードしたCSVを選ぶと、年間の売上と手数料を集計します。<b>ファイルはブラウザ内だけで読み込み、外部へ送信しません。</b>CSVの列名はBOOTH側の仕様変更で変わることがあるため、どの列を使うかを下で選んでください。</p>
+<input id="csv" type="file" accept=".csv,text/csv">
+<div id="mapper" hidden>
+<div class="row">
+<div><label>日付の列（年の絞り込みに使用）</label><select id="colDate"></select></div>
+<div><label>集計する年</label><select id="year"></select></div>
+</div>
+<div class="row">
+<div><label>売上金額の列</label><select id="colAmount"></select></div>
+<div><label>手数料の列（なければ「なし」）</label><select id="colFee"></select></div>
+</div>
+<label class="chk"><input type="checkbox" id="amountIsNet"> 選んだ売上金額の列は「手数料を引いた後」の金額（手数料を足し戻して売上にする）</label>
+<table id="agg"></table>
+<button class="btn" id="apply" type="button" style="margin-top:10px">この集計を上の判定に反映</button>
+<div class="preview"><p class="note">先頭5行のプレビュー</p><div id="pv"></div></div>
+</div>
+</div>
+
+<h2>判定の考え方（令和8年分）</h2>
+<p><b>会社員など給与を1か所から受けて年末調整を受ける人</b>は、給与以外の所得（BOOTHの売上−経費など）の合計が<b>20万円以下</b>なら、所得税の確定申告は不要です。20万円を超えると必要です（国税庁 タックスアンサーNo.1900）。給与収入が2,000万円を超える人は金額にかかわらず必要です。</p>
+<p><b>給与がない人・年末調整を受けない人</b>は、所得の合計から所得控除を引いた課税所得が出るかで判断します。令和8年分は税制改正により、基礎控除が<b>合計所得金額489万円以下なら104万円</b>（489万円超655万円以下は67万円、655万円超2,350万円以下は62万円）に引き上げられました。本ツールは基礎控除と、入力された社会保険料控除だけを考慮した概算です。</p>
+<p><b>BOOTHの売上は「所得」ではありません。</b>所得＝売上−経費（販売手数料、振込手数料、制作に使ったソフト・素材代など）です。副業の物品販売やデジタルコンテンツ販売は、規模や継続性により雑所得または事業所得になります。</p>
+<h3 style="font-size:1rem">住民税は別に申告が必要</h3>
+<p>所得税の「20万円以下なら申告不要」は<b>所得税だけ</b>のルールです。住民税にはこのルールがないため、確定申告をしない場合でも、お住まいの市区町村へ住民税の申告が必要になることがあります。手続は市区町村の案内をご確認ください。</p>
+<h3 style="font-size:1rem">扶養から外れる目安（税法上・令和8年分）</h3>
+<table>
+<tr><th>区分</th><th>本人の合計所得金額の要件</th></tr>
+<tr><td>扶養親族・同一生計配偶者</td><td class="n">62万円以下（給与だけなら年収136万円以下）</td></tr>
+<tr><td>特定親族（19〜22歳）特別控除</td><td class="n">62万円超123万円以下（控除額は段階的に減少）</td></tr>
+<tr><td>配偶者特別控除の対象配偶者</td><td class="n">62万円超133万円以下</td></tr>
+<tr><td>勤労学生控除</td><td class="n">89万円以下（勤労以外の所得10万円以下など）</td></tr>
+</table>
+<p class="note">いずれも改正前は58万円（勤労学生は85万円）でした。合計所得金額には給与所得（給与収入−給与所得控除）とBOOTHなどの所得（売上−経費）を合算します。なお、<b>健康保険・年金の扶養（社会保険上の扶養）は税法とは別の基準</b>で、加入先の健康保険の判断によります。</p>
+<h3 style="font-size:1rem">消費税（インボイス）について</h3>
+<p>消費税は、<b>基準期間（2年前の年）の課税売上高が1,000万円以下</b>なら原則として免税事業者です（前年1〜6月の売上・給与支払額が1,000万円を超える場合などの例外あり）。ただし、インボイス発行事業者の登録をしている人は売上にかかわらず消費税の申告が必要です。登録している人の納税額の目安は<a href="niwari.html">インボイス2割特例 納税額計算ツール</a>で計算できます。</p>
+
+<div class="kit">
+<strong>（有料）BOOTH売上 集計Excelキット　準備中</strong>
+<p class="note" style="margin:6px 0 0">BOOTHの売上CSVを貼り付けるだけで、月別売上・手数料・経費の集計と確定申告用の数字をまとめるExcelキットを準備中です。</p>
+</div>
+
+<h2>出典（国税庁）</h2>
+<ul class="pts note">
+<li><a href="https://www.nta.go.jp/users/gensen/2026kiso/index.htm" rel="noopener">令和8年度税制改正による所得税の基礎控除の引上げ等について</a></li>
+<li><a href="https://www.nta.go.jp/publication/pamph/gensen/2026kaisei.pdf" rel="noopener">令和8年4月 源泉所得税の改正のあらまし（PDF）</a></li>
+<li><a href="https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1199.htm" rel="noopener">No.1199 基礎控除</a> / <a href="https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1410.htm" rel="noopener">No.1410 給与所得控除</a></li>
+<li><a href="https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1900.htm" rel="noopener">No.1900 給与所得者で確定申告が必要な人</a></li>
+<li><a href="https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1180.htm" rel="noopener">No.1180 扶養控除</a> / <a href="https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1177.htm" rel="noopener">No.1177 特定親族特別控除</a> / <a href="https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1175.htm" rel="noopener">No.1175 勤労学生控除</a></li>
+</ul>
+<p class="note">※本ツールは一般的なケースを想定した概算です（医療費控除・ふるさと納税・iDeCo等の他の控除、所得金額調整控除、還付申告、雑所得と事業所得の区分などは考慮していません）。個別の判断は税務署・税理士にご確認ください。本サイトでは個別のご相談はお受けしていません。2026年10月時点の法令・国税庁資料に基づいています。</p>
+
+<footer>関連ツール：<a href="./">無料 請求書作成ツール（インボイス対応）</a> ／ <a href="niwari.html">インボイス2割特例 納税額計算</a> ／ <a href="tedori.html">源泉徴収 手取り逆算</a></footer>
+</div>
+
+<script>
+// ===== LOGIC-START（純関数：tests/booth-shinkoku.test.mjs から読み込んでテスト） =====
+const MAN = 10000;
+/** 令和8年分（令和8・9年分）の給与所得の金額（所得税法別表第五・措法29の4、NTA No.1410） */
+function kyuyoShotokuR8(income) {
+  const x = Math.max(0, Math.floor(Number(income) || 0));
+  if (x < 741000) return 0;
+  if (x < 2191000) return x - 740000;
+  if (x < 2193000) return 1451000;
+  if (x < 2196000) return 1453000;
+  if (x < 2200000) return 1456000;
+  if (x < 6600000) {
+    const a = Math.floor(x / 4000) * 4000; // 別表第五：4,000円単位
+    return x < 3600000 ? a * 7 / 10 - 80000 : a * 8 / 10 - 440000;
+  }
+  if (x < 8500000) return Math.floor(x * 9 / 10) - 1100000;
+  return x - 1950000;
+}
+/** 令和8年分の基礎控除額（居住者、NTA No.1199） */
+function kisoKojoR8(gokei) {
+  const t = Math.max(0, Number(gokei) || 0);
+  if (t <= 489 * MAN) return 104 * MAN;
+  if (t <= 655 * MAN) return 67 * MAN;
+  if (t <= 2350 * MAN) return 62 * MAN;
+  if (t <= 2400 * MAN) return 48 * MAN;
+  if (t <= 2450 * MAN) return 32 * MAN;
+  if (t <= 2500 * MAN) return 16 * MAN;
+  return 0;
+}
+/** 税法上の扶養等の目安（令和8年分） */
+function fuyouR8(gokei) {
+  return {
+    fuyou: gokei <= 62 * MAN,
+    tokuteiShinzoku: gokei > 62 * MAN && gokei <= 123 * MAN,
+    haigushaTokubetsu: gokei > 62 * MAN && gokei <= 133 * MAN,
+    kinroGakusei: gokei <= 89 * MAN,
+  };
+}
+/**
+ * 所得税の確定申告要否の判定（概算）
+ * in: {status, salary, nencho(bool), sales, fee, expense, other, shaho}
+ */
+function judge(input) {
+  const n = v => Math.max(0, Math.floor(Number(v) || 0));
+  const salary = input.status === "none" ? 0 : n(input.salary);
+  const hasSalary = salary > 0;
+  const boothShotoku = Math.max(0, n(input.sales) - n(input.fee) - n(input.expense));
+  const sideShotoku = boothShotoku + n(input.other);
+  const kyuyo = kyuyoShotokuR8(salary);
+  const gokei = kyuyo + sideShotoku;
+  const kiso = kisoKojoR8(gokei);
+  const shaho = n(input.shaho);
+  const kazei = Math.floor(Math.max(0, gokei - kiso - shaho) / 1000) * 1000; // 課税所得は千円未満切捨て
+  let need, rule, reason;
+  if (hasSalary && salary > 2000 * MAN) {
+    need = true; rule = "over20m"; reason = "給与収入が2,000万円を超えるため、確定申告が必要です。";
+  } else if (hasSalary && input.nencho) {
+    rule = "20man";
+    need = sideShotoku > 20 * MAN;
+    reason = need ? "給与以外の所得の合計が20万円を超えるため、所得税の確定申告が必要です。"
+                  : "給与以外の所得の合計が20万円以下のため、所得税の確定申告は不要です（住民税の申告は別途必要な場合があります）。";
+  } else {
+    rule = "general";
+    need = kazei > 0;
+    reason = need ? "所得の合計から基礎控除等を引いても課税所得が残るため、確定申告が必要と考えられます。"
+                  : "所得の合計が基礎控除等の範囲内のため、所得税はかからず確定申告は不要と考えられます。";
+  }
+  return { need, rule, reason, salary, kyuyo, boothShotoku, sideShotoku, gokei, kiso, shaho, kazei,
+           fuyou: fuyouR8(gokei), juminzeiNote: !need && sideShotoku > 0 };
+}
+/** CSVパーサ（RFC4180相当：ダブルクォート・改行入りセル対応） */
+function parseCSV(text) {
+  const s = String(text).replace(/^﻿/, "");
+  const rows = []; let row = [], cell = "", q = false;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (q) {
+      if (c === '"') { if (s[i + 1] === '"') { cell += '"'; i++; } else q = false; }
+      else cell += c;
+    } else if (c === '"') q = true;
+    else if (c === ",") { row.push(cell); cell = ""; }
+    else if (c === "\n" || c === "\r") {
+      if (c === "\r" && s[i + 1] === "\n") i++;
+      row.push(cell); rows.push(row); row = []; cell = "";
+    } else cell += c;
+  }
+  if (cell !== "" || row.length) { row.push(cell); rows.push(row); }
+  return rows.filter(r => r.some(v => v.trim() !== ""));
+}
+/** 「¥1,200」「1200円」「-300」などを数値に */
+function parseAmount(v) {
+  const t = String(v ?? "").replace(/[０-９]/g, d => String.fromCharCode(d.charCodeAt(0) - 0xFEE0))
+    .replace(/[−ー－△▲]/g, "-").replace(/[^0-9.\-]/g, "");
+  const x = parseFloat(t);
+  return Number.isFinite(x) ? x : 0;
+}
+/** 日付文字列から西暦年を取り出す（取れなければ null） */
+function yearOf(v) {
+  const m = String(v ?? "").match(/(20\d{2})\s*[\/\-年.]/);
+  return m ? +m[1] : null;
+}
+/** ヘッダーから列を推測（-1 は該当なし） */
+function guessColumns(header) {
+  const h = header.map(x => String(x).trim());
+  const find = (...res) => { for (const re of res) { const i = h.findIndex(x => re.test(x)); if (i >= 0) return i; } return -1; };
+  return {
+    date: find(/(注文|購入|売上|支払|決済).*日/, /日時|日付/, /date/i),
+    fee: find(/手数料/, /fee/i),
+    amount: find(/売上金額|売上額/, /(商品|お支払|支払|合計).*(金額|価格|代金)/, /金額|価格|代金|売上/, /amount|price|total/i),
+  };
+}
+/** 集計：map={date, amount, fee}（列番号、-1可）、year=null で全期間、amountIsNet=手数料差引後の列 */
+function aggregate(rows, map, year, amountIsNet) {
+  let sales = 0, fee = 0, count = 0, skipped = 0;
+  for (const r of rows) {
+    if (map.date >= 0 && year != null) {
+      const y = yearOf(r[map.date]);
+      if (y !== year) { skipped++; continue; }
+    }
+    const a = map.amount >= 0 ? parseAmount(r[map.amount]) : 0;
+    const f = map.fee >= 0 ? Math.abs(parseAmount(r[map.fee])) : 0;
+    sales += amountIsNet ? a + f : a; fee += f; count++;
+  }
+  return { sales: Math.round(sales), fee: Math.round(fee), net: Math.round(sales - fee), count, skipped };
+}
+// ===== LOGIC-END =====
+
+const $ = id => document.getElementById(id);
+const yen = v => Math.round(v).toLocaleString("ja-JP") + "円";
+const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+function run() {
+  const st = $("status").value;
+  $("salary").disabled = $("nencho").disabled = st === "none";
+  const r = judge({ status: st, salary: $("salary").value, nencho: $("nencho").value === "1",
+    sales: $("sales").value, fee: $("fee").value, expense: $("expense").value, other: $("other").value, shaho: $("shaho").value });
+  $("verdict").className = "verdict " + (r.need ? "need" : "noneed");
+  $("verdict").textContent = r.need ? "所得税の確定申告：必要" : "所得税の確定申告：不要（目安）";
+  let rows = `<tr><td>BOOTH等の所得（売上−手数料−経費）</td><td class="n">${yen(r.boothShotoku)}</td></tr>
+  <tr><td>給与以外の所得の合計</td><td class="n">${yen(r.sideShotoku)}</td></tr>`;
+  if (r.salary) rows += `<tr><td>給与所得（給与収入 ${yen(r.salary)} − 給与所得控除）</td><td class="n">${yen(r.kyuyo)}</td></tr>`;
+  rows += `<tr><td>合計所得金額</td><td class="n">${yen(r.gokei)}</td></tr>`;
+  if (r.rule === "general") rows += `<tr><td>基礎控除（令和8年分）</td><td class="n">−${yen(r.kiso)}</td></tr>
+  ${r.shaho ? `<tr><td>社会保険料控除</td><td class="n">−${yen(r.shaho)}</td></tr>` : ""}
+  <tr><td>課税所得（千円未満切捨て・概算）</td><td class="n">${yen(r.kazei)}</td></tr>`;
+  $("calc").innerHTML = rows;
+  const notes = [r.reason];
+  if (r.rule === "20man") notes.push("20万円の判定は売上ではなく所得（売上−経費）で行います。医療費控除やふるさと納税などで還付を受けるために確定申告をする場合は、20万円以下の副業所得も含めて申告します。");
+  if (r.juminzeiNote) notes.push('<span class="warn">住民税：所得税の確定申告が不要でも、BOOTH等の所得について市区町村への住民税の申告が必要になる場合があります。</span>');
+  if (st !== "employee") {
+    const f = r.fuyou;
+    notes.push(f.fuyou ? "合計所得金額が62万円以下のため、家族の税法上の扶養（扶養控除・同一生計配偶者）の所得要件を満たします。"
+      : f.tokuteiShinzoku ? "合計所得金額が62万円を超えるため扶養控除の対象外です。19〜22歳なら親は特定親族特別控除（123万円以下まで段階的）を受けられる可能性があります。"
+      : "合計所得金額が123万円を超えるため、家族の扶養控除・特定親族特別控除の対象外です。");
+    if (st === "student") notes.push(f.kinroGakusei ? "合計所得金額89万円以下：勤労学生控除の所得要件（勤労以外の所得10万円以下などの条件あり）の範囲内です。" : "合計所得金額が89万円を超えるため、勤労学生控除は受けられません。");
+  }
+  if (+$("sales").value > 1000 * MAN) notes.push("今年の課税売上高が1,000万円を超えると、原則として2年後（令和10年）は消費税の課税事業者になります。");
+  $("notes").innerHTML = notes.map(x => `<li>${x}</li>`).join("");
+}
+["status", "salary", "nencho", "sales", "fee", "expense", "other", "shaho"].forEach(i => $(i).addEventListener("input", run));
+run();
+
+// ---- CSV（ブラウザ内のみで処理） ----
+let csvRows = [];
+function decode(buf) {
+  try { return new TextDecoder("utf-8", { fatal: true }).decode(buf); }
+  catch (e) { return new TextDecoder("shift_jis").decode(buf); }
+}
+function fillSelect(sel, header, idx, allowNone) {
+  sel.innerHTML = (allowNone ? '<option value="-1">なし</option>' : "") + header.map((h, i) => `<option value="${i}"${i === idx ? " selected" : ""}>${esc(h || "(列" + (i + 1) + ")")}</option>`).join("");
+  if (idx < 0 && allowNone) sel.value = "-1";
+}
+function refreshAgg() {
+  const map = { date: +$("colDate").value, amount: +$("colAmount").value, fee: +$("colFee").value };
+  const y = $("year").value === "all" ? null : +$("year").value;
+  const a = aggregate(csvRows.slice(1), map, y, $("amountIsNet").checked);
+  $("agg").innerHTML = `<tr><td>対象行数</td><td class="n">${a.count}行${a.skipped ? `（対象外 ${a.skipped}行）` : ""}</td></tr>
+  <tr><td>売上合計（手数料差引前）</td><td class="n">${yen(a.sales)}</td></tr>
+  <tr><td>手数料合計</td><td class="n">${yen(a.fee)}</td></tr><tr><td>差引（入金ベース）</td><td class="n">${yen(a.net)}</td></tr>`;
+  return a;
+}
+$("csv").addEventListener("change", async e => {
+  const f = e.target.files[0]; if (!f) return;
+  csvRows = parseCSV(decode(await f.arrayBuffer()));
+  if (csvRows.length < 2) { $("mapper").hidden = true; alert("CSVのデータ行が見つかりませんでした。"); return; }
+  const header = csvRows[0], g = guessColumns(header);
+  fillSelect($("colDate"), header, g.date, true);
+  fillSelect($("colAmount"), header, g.amount < 0 ? 0 : g.amount, false);
+  fillSelect($("colFee"), header, g.fee, true);
+  const years = [...new Set(csvRows.slice(1).map(r => g.date >= 0 ? yearOf(r[g.date]) : null).filter(Boolean))].sort();
+  $("year").innerHTML = years.map(y => `<option value="${y}"${y === 2026 ? " selected" : ""}>${y}年</option>`).join("") + '<option value="all">全期間</option>';
+  if (!years.includes(2026)) $("year").value = years.length ? String(years[years.length - 1]) : "all";
+  $("pv").innerHTML = "<table>" + csvRows.slice(0, 6).map((r, i) => "<tr>" + r.map(c => `<${i ? "td" : "th"}>${esc(c)}</${i ? "td" : "th"}>`).join("") + "</tr>").join("") + "</table>";
+  $("mapper").hidden = false; refreshAgg();
+});
+["colDate", "colAmount", "colFee", "year", "amountIsNet"].forEach(i => $(i).addEventListener("change", refreshAgg));
+$("colDate").addEventListener("change", () => {
+  const c = +$("colDate").value;
+  const years = c < 0 ? [] : [...new Set(csvRows.slice(1).map(r => yearOf(r[c])).filter(Boolean))].sort();
+  $("year").innerHTML = years.map(y => `<option value="${y}"${y === 2026 ? " selected" : ""}>${y}年</option>`).join("") + '<option value="all"' + (years.length ? "" : " selected") + '>全期間</option>';
+  refreshAgg();
+});
+$("apply").addEventListener("click", () => {
+  const a = refreshAgg();
+  $("sales").value = a.sales; $("fee").value = a.fee; run();
+  $("verdict").scrollIntoView({ behavior: "smooth", block: "center" });
+});
+</script>
+</body>
+</html>
