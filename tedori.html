@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>源泉徴収 手取り・請求額 逆算ツール｜フリーランスの報酬計算</title>
+<meta name="description" content="フリーランスの報酬の源泉徴収税額（10.21%/20.42%）と手取り額を自動計算。「手取りで〇円欲しい」から請求すべき金額を逆算することもできます。登録不要・無料。">
+<link rel="canonical" href="https://soya-hon.github.io/seikyu/tedori.html">
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#1d2330;--sub:#5b6474;--line:#d9dde4;--accent:#1f6feb}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171c;--card:#1c2027;--ink:#e6e9ee;--sub:#9aa3b2;--line:#2f3540;--accent:#4c8dff}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Noto Sans JP","Yu Gothic UI",sans-serif;line-height:1.7}
+.wrap{max-width:720px;margin:auto;padding:20px 16px 40px}
+h1{font-size:1.35rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:14px}
+label{display:block;font-size:.85rem;color:var(--sub);margin-top:10px}
+input,select{width:100%;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);font:inherit}
+table{width:100%;border-collapse:collapse;margin-top:12px}
+td{padding:8px;border-bottom:1px solid var(--line)}td.n{text-align:right;font-variant-numeric:tabular-nums}
+.big td{font-weight:bold;font-size:1.1rem;color:var(--accent)}
+h2{font-size:1.05rem;border-left:4px solid var(--accent);padding-left:8px;margin-top:24px}
+a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>源泉徴収 手取り・請求額 逆算ツール</h1>
+<p>個人への報酬にかかる源泉徴収税額（所得税＋復興特別所得税）と、実際の振込額（手取り）を計算します。</p>
+<div class="card">
+<label>計算モード</label>
+<select id="m"><option value="f">請求額（税抜報酬）から手取りを計算</option><option value="r">手取り（振込額）から請求すべき報酬を逆算</option></select>
+<label id="lbl">税抜報酬額（円）</label><input id="v" type="number" min="0" value="100000" inputmode="numeric">
+<label>消費税</label><select id="t"><option value="10">10%を上乗せして請求</option><option value="0">上乗せしない（免税事業者で別記しない等）</option></select>
+<table id="out"></table>
+</div>
+<h2>計算式</h2>
+<p>源泉徴収税額＝ 報酬額 × 10.21%（100万円以下の部分）＋ 100万円超の部分 × 20.42%、1円未満切り捨て。消費税額が請求書で明確に区分されている場合、税抜金額を基準にできます。</p>
+<p>手取り（振込額）＝ 税抜報酬 ＋ 消費税 − 源泉徴収税額</p>
+<h2>源泉徴収の対象になる主な報酬</h2>
+<p>原稿料、デザイン料、イラスト・写真の報酬、講演料、翻訳料、税理士等の士業報酬など（所得税法第204条）。システム開発・Web制作など源泉徴収の対象外となる業務もあります。</p>
+<p style="font-size:.85rem;color:var(--sub)">※一般的なケースの概算です。個別の判断は税務署・税理士にご確認ください。</p>
+<p><a href="./">← 無料 請求書作成ツール（インボイス対応・源泉徴収自動計算）</a></p>
+</div>
+<script>
+const $=id=>document.getElementById(id),yen=n=>"¥"+Math.round(n).toLocaleString("ja-JP");
+const wh=x=>x<=1e6?Math.floor(x*0.1021):Math.floor((x-1e6)*0.2042)+102100;
+function fwd(b,t){const tax=Math.floor(b*t/100),w=wh(b);return{b,tax,w,net:b+tax-w}}
+function run(){
+  const m=$("m").value,v=Math.max(0,+$("v").value||0),t=+$("t").value;
+  $("lbl").textContent=m==="f"?"税抜報酬額（円）":"欲しい手取り額（円）";
+  let r;
+  if(m==="f")r=fwd(v,t);
+  else{ // 単調増加なので二分探索で最小の報酬を求める
+    let lo=0,hi=Math.ceil(v*2)+10;while(lo<hi){const mid=Math.floor((lo+hi)/2);fwd(mid,t).net>=v?hi=mid:lo=mid+1}r=fwd(lo,t)}
+  $("out").innerHTML=`<tr><td>税抜報酬</td><td class="n">${yen(r.b)}</td></tr><tr><td>消費税</td><td class="n">${yen(r.tax)}</td></tr>
+  <tr><td>請求額（税込）</td><td class="n">${yen(r.b+r.tax)}</td></tr><tr><td>源泉徴収税額</td><td class="n">−${yen(r.w)}</td></tr>
+  <tr class="big"><td>手取り（振込額）</td><td class="n">${yen(r.net)}</td></tr>`;
+}
+["m","v","t"].forEach(i=>$(i).addEventListener("input",run));run();
+</script>
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>無料 請求書作成ツール｜インボイス対応・源泉徴収自動計算・登録不要</title>
+<meta name="description" content="ブラウザだけで使える無料の請求書作成ツール。インボイス制度（適格請求書）の記載事項に対応、源泉徴収税額・消費税（10%/8%）を自動計算。会員登録不要、入力データは端末内にのみ保存。PDF保存も可能。">
+<link rel="canonical" href="https://soya-hon.github.io/seikyu/">
+<meta property="og:title" content="無料 請求書作成ツール（インボイス対応・源泉徴収自動計算）">
+<meta property="og:description" content="登録不要・ブラウザ完結。適格請求書の記載事項に対応し、源泉徴収と消費税を自動計算。">
+<meta property="og:type" content="website">
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#1d2330;--sub:#5b6474;--line:#d9dde4;--accent:#1f6feb;--accent2:#0b4fbf}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171c;--card:#1c2027;--ink:#e6e9ee;--sub:#9aa3b2;--line:#2f3540;--accent:#4c8dff;--accent2:#78a8ff}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Noto Sans JP","Yu Gothic UI",sans-serif;line-height:1.6}
+header{padding:20px 16px 8px;max-width:1100px;margin:auto}
+h1{font-size:1.4rem;margin:0 0 4px}
+header p{margin:0;color:var(--sub);font-size:.92rem}
+main{max-width:1100px;margin:auto;padding:12px 16px 40px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:860px){main{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
+label{display:block;font-size:.8rem;color:var(--sub);margin-top:10px}
+input,textarea,select{width:100%;padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);font:inherit;font-size:.92rem}
+textarea{min-height:56px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+table.items{width:100%;border-collapse:collapse;margin-top:8px}
+table.items td{padding:3px}
+table.items input,table.items select{padding:6px;font-size:.85rem}
+button{cursor:pointer;border:0;border-radius:6px;padding:9px 14px;font:inherit;font-size:.9rem}
+.btn{background:var(--accent);color:#fff}.btn:hover{background:var(--accent2)}
+.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+h2{font-size:1rem;margin:16px 0 0;border-left:4px solid var(--accent);padding-left:8px}
+/* invoice preview: always light paper */
+#paper{background:#fff;color:#111;padding:28px;border-radius:4px;font-size:12px;box-shadow:0 1px 4px rgba(0,0,0,.15);overflow-x:auto}
+#paper h3{text-align:center;font-size:22px;letter-spacing:.5em;margin:0 0 18px}
+#paper .top{display:flex;justify-content:space-between;gap:16px}
+#paper .to{font-size:15px;border-bottom:1px solid #111;padding-bottom:2px}
+#paper .total{font-size:17px;font-weight:bold;border-bottom:2px solid #111;margin:14px 0;padding:4px 0}
+#paper table{width:100%;border-collapse:collapse;margin-top:8px}
+#paper th,#paper td{border:1px solid #888;padding:5px;text-align:left}
+#paper th{background:#eef1f5}
+#paper td.n{text-align:right;white-space:nowrap}
+#paper .sum{width:60%;margin-left:auto}
+#paper .note{white-space:pre-wrap;margin-top:12px;border:1px solid #888;padding:8px;min-height:40px}
+.cta{grid-column:1/-1;background:linear-gradient(135deg,#1f6feb,#7b3fe4);color:#fff;border-radius:10px;padding:18px}
+.cta a{color:#fff;font-weight:bold}
+article{grid-column:1/-1}
+article h2{margin-top:20px}
+footer{max-width:1100px;margin:auto;padding:16px;color:var(--sub);font-size:.8rem}
+footer a{color:var(--sub)}
+@media print{body{background:#fff}header,.card.form,.cta,article,footer,.actions{display:none!important}main{display:block;padding:0}.card{border:0;padding:0}#paper{box-shadow:none;padding:0}}
+</style>
+</head>
+<body>
+<header>
+<h1>無料 請求書作成ツール（インボイス対応）</h1>
+<p>登録不要・ブラウザ完結。源泉徴収と消費税を自動計算し、そのままPDF保存できます。入力内容はお使いの端末にのみ保存されます。</p>
+</header>
+<main>
+<section class="card form">
+<div class="row">
+<div><label>請求書番号</label><input id="no" value="0001"></div>
+<div><label>請求日</label><input id="date" type="date"></div>
+</div>
+<div class="row">
+<div><label>お支払期限</label><input id="due" type="date"></div>
+<div><label>件名</label><input id="subject" placeholder="Webサイト制作費"></div>
+</div>
+<h2>請求先</h2>
+<label>宛名</label><input id="client" placeholder="株式会社〇〇">
+<select id="honor" style="margin-top:6px"><option>御中</option><option>様</option></select>
+<h2>請求元（あなた）</h2>
+<label>氏名・屋号</label><input id="me" placeholder="山田 太郎">
+<label>住所・連絡先</label><textarea id="addr" placeholder="〒000-0000 東京都…&#10;TEL / メール"></textarea>
+<label>適格請求書発行事業者 登録番号（任意）</label><input id="reg" placeholder="T1234567890123">
+<h2>明細</h2>
+<table class="items"><tbody id="items"></tbody></table>
+<button class="ghost" id="add" type="button" style="margin-top:6px">＋ 行を追加</button>
+<h2>計算設定</h2>
+<div class="row">
+<div><label>金額の入力方法</label><select id="mode"><option value="ex">税抜で入力</option><option value="in">税込で入力</option></select></div>
+<div><label>源泉徴収</label><select id="wh"><option value="0">しない</option><option value="1">する（個人の報酬等）</option></select></div>
+</div>
+<label>振込先</label><textarea id="bank" placeholder="〇〇銀行 〇〇支店 普通 1234567 ヤマダタロウ"></textarea>
+<label>備考</label><textarea id="memo" placeholder="振込手数料はご負担願います。"></textarea>
+<div class="actions">
+<button class="btn" id="print" type="button">PDFで保存 / 印刷</button>
+<button class="ghost" id="reset" type="button">入力をクリア</button>
+</div>
+</section>
+<section class="card"><div id="paper"></div></section>
+
+<div class="cta">
+<strong>確定申告まで見据えるなら：</strong> 売上・経費を入力するだけで月別集計・源泉徴収額・確定申告用の勘定科目別合計まで自動で出る
+「フリーランス経費・売上管理Excelテンプレート（請求書・見積書・領収書つき）」を販売中です。
+<span id="shoplink"></span>
+</div>
+
+<article class="card">
+<h2>使い方</h2>
+<p>左のフォームに入力すると右側の請求書がリアルタイムに更新されます。「PDFで保存 / 印刷」を押し、印刷画面で送信先を「PDFに保存」にするとPDFファイルになります。入力内容はブラウザ（localStorage）に保存され、サーバーには送信されません。</p>
+<h2>インボイス制度（適格請求書）の記載事項</h2>
+<p>適格請求書には ①発行事業者の氏名・名称と登録番号 ②取引年月日 ③取引内容（軽減税率対象の場合はその旨） ④税率ごとに区分した合計額と適用税率 ⑤税率ごとの消費税額 ⑥受領者の氏名・名称 の記載が必要です。本ツールは登録番号を入力すると①〜⑥を満たす様式で出力します。登録番号がない場合は通常の請求書として出力されます。</p>
+<h2>源泉徴収税額の計算方法</h2>
+<p>原稿料・デザイン料・講演料など個人への一定の報酬は、支払者が所得税及び復興特別所得税を源泉徴収します。税額は、支払金額が100万円以下の部分は <b>10.21%</b>、100万円を超える部分は <b>20.42%</b>（1円未満切り捨て）。請求書で消費税額が明確に区分されている場合は、税抜金額を基準に計算できます。本ツールは税抜金額を基準に計算しています。</p>
+<h2>よくある質問</h2>
+<p><b>Q. 無料ですか？</b> A. はい、すべての機能を無料で利用できます。<br>
+<b>Q. 印鑑は必要？</b> A. 法律上、請求書への押印は必須ではありません。<br>
+<b>Q. 8%（軽減税率）の品目は？</b> A. 明細ごとに税率を選べます。8%の品目には「※」が付き、軽減税率対象である旨が表示されます。</p>
+<p style="font-size:.8rem;color:var(--sub)">※本ツールの計算結果は一般的なケースを想定したものです。個別の税務判断は税理士・税務署にご確認ください。</p>
+</article>
+</main>
+<footer>関連ツール：<a href="tedori.html">報酬の手取り・請求額 逆算ツール（源泉徴収）</a></footer>
+
+<script>
+const SHOP_URL = ""; // 販売ページURL（決まり次第設定）
+const $ = id => document.getElementById(id);
+const yen = n => "¥" + Math.round(n).toLocaleString("ja-JP");
+const fields = ["no","date","due","subject","client","honor","me","addr","reg","mode","wh","bank","memo"];
+let items = [];
+function today(off=0){const d=new Date();d.setDate(d.getDate()+off);return d.toISOString().slice(0,10)}
+function load(){
+  let s={};try{s=JSON.parse(localStorage.getItem("seikyu")||"{}")}catch(e){}
+  fields.forEach(f=>{if(s[f]!=null)$(f).value=s[f]});
+  if(!$("date").value)$("date").value=today();
+  if(!$("due").value)$("due").value=today(30);
+  items=s.items&&s.items.length?s.items:[{name:"",qty:1,price:0,rate:10}];
+}
+function save(){const s={items};fields.forEach(f=>s[f]=$(f).value);try{localStorage.setItem("seikyu",JSON.stringify(s))}catch(e){}}
+function esc(t){return String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function jdate(v){if(!v)return"";const[y,m,d]=v.split("-");return`${y}年${+m}月${+d}日`}
+function renderItems(){
+  $("items").innerHTML=items.map((it,i)=>`<tr>
+  <td style="width:44%"><input data-i="${i}" data-k="name" value="${esc(it.name)}" placeholder="品目"></td>
+  <td style="width:12%"><input data-i="${i}" data-k="qty" type="number" min="0" step="any" value="${it.qty}"></td>
+  <td style="width:22%"><input data-i="${i}" data-k="price" type="number" min="0" value="${it.price}" placeholder="単価"></td>
+  <td style="width:14%"><select data-i="${i}" data-k="rate"><option value="10"${it.rate==10?" selected":""}>10%</option><option value="8"${it.rate==8?" selected":""}>8%※</option><option value="0"${it.rate==0?" selected":""}>非課税</option></select></td>
+  <td><button class="ghost" type="button" data-del="${i}" aria-label="削除">×</button></td></tr>`).join("");
+}
+function calc(){
+  const incl=$("mode").value==="in";const by={10:0,8:0,0:0};
+  items.forEach(it=>{by[it.rate]=(by[it.rate]||0)+(+it.qty||0)*(+it.price||0)});
+  const r={};let ex=0,tax=0;
+  [10,8,0].forEach(k=>{const amt=by[k];if(!amt)return;let base,t;
+    if(incl){t=k?Math.floor(amt*k/(100+k)):0;base=amt-t}else{base=amt;t=Math.floor(amt*k/100)}
+    r[k]={base,t};ex+=base;tax+=t});
+  let wh=0;if($("wh").value==="1"){wh=ex<=1e6?Math.floor(ex*0.1021):Math.floor((ex-1e6)*0.2042)+102100}
+  return{r,ex,tax,wh,total:ex+tax-wh};
+}
+function render(){
+  const c=calc(),reg=$("reg").value.trim(),incl=$("mode").value==="in";
+  const rows=items.filter(it=>it.name||+it.price).map(it=>{const a=(+it.qty||0)*(+it.price||0);
+    return`<tr><td>${esc(it.name)}${it.rate==8?" ※":""}</td><td class="n">${it.qty}</td><td class="n">${yen(+it.price||0)}</td><td class="n">${yen(a)}</td></tr>`}).join("")||`<tr><td colspan="4">（明細を入力してください）</td></tr>`;
+  const lbl={10:"10%対象",8:"8%対象（軽減税率）",0:"非課税"};
+  const breakdown=Object.keys(c.r).sort((a,b)=>b-a).map(k=>`<tr><td>${lbl[k]}</td><td class="n">${yen(c.r[k].base)}（税抜）</td><td class="n">${k==0?"-":"消費税 "+yen(c.r[k].t)}</td></tr>`).join("");
+  $("paper").innerHTML=`<h3>請求書</h3>
+  <div class="top"><div style="flex:1"><div class="to">${esc($("client").value)||"　"} ${esc($("honor").value)}</div>
+  <p>${$("subject").value?"件名："+esc($("subject").value)+"<br>":""}下記のとおりご請求申し上げます。</p></div>
+  <div style="text-align:right">No. ${esc($("no").value)}<br>請求日：${jdate($("date").value)}<br><br>
+  <b>${esc($("me").value)}</b><br><span style="white-space:pre-wrap">${esc($("addr").value)}</span>${reg?"<br>登録番号："+esc(reg):""}</div></div>
+  <div class="total">ご請求金額　${yen(c.total)}（税込${c.wh?"・源泉徴収後":""}）</div>
+  <div>お支払期限：${jdate($("due").value)}</div>
+  <table><thead><tr><th>品目</th><th>数量</th><th>単価${incl?"（税込）":"（税抜）"}</th><th>金額</th></tr></thead><tbody>${rows}</tbody></table>
+  <table class="sum"><tbody>${breakdown}
+  <tr><td>小計（税抜）</td><td class="n" colspan="2">${yen(c.ex)}</td></tr>
+  <tr><td>消費税</td><td class="n" colspan="2">${yen(c.tax)}</td></tr>
+  ${c.wh?`<tr><td>源泉徴収税額</td><td class="n" colspan="2">−${yen(c.wh)}</td></tr>`:""}
+  <tr><th>合計</th><th class="n" colspan="2">${yen(c.total)}</th></tr></tbody></table>
+  ${items.some(it=>it.rate==8)?"<div>※は軽減税率（8%）対象品目です。</div>":""}
+  ${$("bank").value?`<div class="note"><b>お振込先</b>\n${esc($("bank").value)}</div>`:""}
+  ${$("memo").value?`<div class="note"><b>備考</b>\n${esc($("memo").value)}</div>`:""}`;
+  save();
+}
+document.addEventListener("input",e=>{const t=e.target;if(t.dataset.k){const i=+t.dataset.i;items[i][t.dataset.k]=t.dataset.k==="name"?t.value:+t.value}render()});
+document.addEventListener("change",e=>{if(e.target.dataset.k==="rate"){items[+e.target.dataset.i].rate=+e.target.value;render()}});
+document.addEventListener("click",e=>{if(e.target.dataset.del!=null){items.splice(+e.target.dataset.del,1);if(!items.length)items.push({name:"",qty:1,price:0,rate:10});renderItems();render()}});
+$("add").onclick=()=>{items.push({name:"",qty:1,price:0,rate:10});renderItems();render()};
+$("print").onclick=()=>window.print();
+$("reset").onclick=()=>{try{localStorage.removeItem("seikyu")}catch(e){}location.reload()};
+if(SHOP_URL)$("shoplink").innerHTML=` <a href="${SHOP_URL}" target="_blank" rel="noopener">▶ 詳細を見る</a>`;else $("shoplink").textContent="（販売ページ準備中）";
+load();renderItems();render();
+</script>
+</body>
+</html>

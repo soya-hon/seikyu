@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://soya-hon.github.io/seikyu/sitemap.xml
