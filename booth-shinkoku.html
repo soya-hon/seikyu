@@ -15,7 +15,7 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Noto Sans JP","Yu Gothic UI",sans-serif;line-height:1.7}
 .wrap{max-width:760px;margin:auto;padding:20px 16px 40px}
-h1{font-size:1.35rem;margin-bottom:4px}
+h1{font-size:1.35rem;margin-bottom:4px;text-wrap:balance}
 .lead{color:var(--sub);margin-top:0}
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:14px}
 label{display:block;font-size:.85rem;color:var(--sub);margin-top:10px}
@@ -55,6 +55,7 @@ footer a{color:var(--sub)}
 <p class="lead">BOOTH・VRChat向けアバター/アセット販売などの副収入について、<b>令和8年分（2026年1〜12月）</b>の所得税の確定申告が必要かを判定します。登録不要・入力内容はどこにも送信されません。</p>
 
 <div class="card">
+<p class="note" style="margin:0">※最初は例の数字が入っています。ご自分の数字に書き換えると、結果が変わります。</p>
 <label>あなたの立場</label>
 <select id="status">
 <option value="employee">会社員・公務員・パート（給与あり）</option>
@@ -77,6 +78,7 @@ footer a{color:var(--sub)}
 <div id="verdict" class="verdict" role="status" aria-live="polite"></div>
 <table id="calc"></table>
 <ul class="pts" id="notes"></ul>
+<p class="note" id="kitInline" hidden>申告が必要と出た方へ：売上CSVの貼り付けで月別・年間の集計までできる、筆者（yosa lab）作成のExcelキット（980円）があります。<a href="https://creator-tax-lab.booth.pm/items/9022036" target="_blank" rel="noopener">BOOTHで見る ▶</a></p>
 </div>
 
 <h2>BOOTHの売上CSVから自動集計</h2>
@@ -118,7 +120,7 @@ footer a{color:var(--sub)}
 <p>消費税は、<b>基準期間（2年前の年）の課税売上高が1,000万円以下</b>なら原則として免税事業者です（前年1〜6月の売上・給与支払額が1,000万円を超える場合などの例外あり）。ただし、インボイス発行事業者の登録をしている人は売上にかかわらず消費税の申告が必要です。登録している人の納税額の目安は<a href="niwari.html">インボイス2割特例 納税額計算ツール</a>で計算できます。</p>
 
 <div class="kit">
-<strong>（有料・980円）クリエイター売上 確定申告 集計Excelキット</strong>
+<strong>（有料・980円・筆者作成）クリエイター売上 確定申告 集計Excelキット</strong>
 <p class="note" style="margin:6px 0 0">BOOTH・FANBOX・Skeb・Fantia・PayPalの売上CSVを貼り付けて、月別・年間の集計、経費、申告要否と扶養の判定（目安）までまとめるExcelキット＋手順書PDF。<a href="https://creator-tax-lab.booth.pm/items/9022036" target="_blank" rel="noopener">BOOTHで見る ▶</a></p>
 </div>
 
@@ -271,6 +273,7 @@ function run() {
   const r = judge({ status: st, salary: $("salary").value, nencho: $("nencho").value === "1",
     sales: $("sales").value, fee: $("fee").value, expense: $("expense").value, other: $("other").value, shaho: $("shaho").value });
   $("verdict").className = "verdict " + (r.need ? "need" : "noneed");
+  $("kitInline").hidden = !r.need;
   $("verdict").textContent = r.need ? "所得税の確定申告：必要" : "所得税の確定申告：不要（目安）";
   let rows = `<tr><td>BOOTH等の所得（売上−手数料−経費）</td><td class="n">${yen(r.boothShotoku)}</td></tr>
   <tr><td>給与以外の所得の合計</td><td class="n">${yen(r.sideShotoku)}</td></tr>`;
