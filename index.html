@@ -92,10 +92,6 @@ footer a{color:var(--sub)}
 </section>
 <section class="card"><div id="paper"></div></section>
 
-<div class="cta">
-<strong>確定申告まで見据えるなら：</strong> BOOTH・FANBOX・Skeb・Fantia・PayPalの売上をまとめて集計し、経費・申告要否・扶養の判定（目安）まで出せる「クリエイター売上 確定申告 集計Excelキット（980円・手順書PDFつき）」をBOOTHで販売中です。<span id="shoplink"></span>
-</div>
-
 <article class="card">
 <h2>使い方</h2>
 <p>左のフォームに入力すると右側の請求書がリアルタイムに更新されます。「PDFで保存 / 印刷」を押し、印刷画面で送信先を「PDFに保存」にするとPDFファイルになります。入力内容はブラウザ（localStorage）に保存され、サーバーには送信されません。</p>
@@ -113,7 +109,6 @@ footer a{color:var(--sub)}
 <footer>関連ツール：<a href="tedori.html">報酬の手取り・請求額 逆算ツール（源泉徴収）</a> ／ <a href="booth-shinkoku.html">BOOTH売上 確定申告いる？判定ツール</a> ／ <a href="niwari.html">インボイス2割特例 納税額計算ツール</a></footer>
 
 <script>
-const SHOP_URL = "https://creator-tax-lab.booth.pm/items/9022036"; // 販売ページURL（決まり次第設定）
 const $ = id => document.getElementById(id);
 const yen = n => "¥" + Math.round(n).toLocaleString("ja-JP");
 const fields = ["no","date","due","subject","client","honor","me","addr","reg","mode","wh","bank","memo"];
@@ -177,7 +172,6 @@ document.addEventListener("click",e=>{if(e.target.dataset.del!=null){items.splic
 $("add").onclick=()=>{items.push({name:"",qty:1,price:0,rate:10});renderItems();render()};
 $("print").onclick=()=>window.print();
 $("reset").onclick=()=>{try{localStorage.removeItem("seikyu")}catch(e){}location.reload()};
-if(SHOP_URL)$("shoplink").innerHTML=` <a href="${SHOP_URL}" target="_blank" rel="noopener">▶ 詳細を見る</a>`;else $("shoplink").textContent="（販売ページ準備中）";
 load();renderItems();render();
 </script>
 </body>
