@@ -1,0 +1,24 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+/* SNS で共有したときの画像（1200×630）。ページごとに ?p= で中身を変える。作り直し：node ../../ops/tools/... ではなく、Chrome の headless で撮る（README なし・この1枚だけ） */
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1200px;height:630px;overflow:hidden;font-family:"Yu Gothic UI","Yu Gothic","Meiryo",sans-serif}
+body{background:#f6f7f9;color:#1d2330;position:relative}
+.bar{position:absolute;left:0;top:0;bottom:0;width:18px;background:#1f6feb}
+.wrap{position:absolute;left:90px;right:80px;top:70px}
+.k{display:inline-block;font-size:30px;font-weight:700;color:#1f6feb;background:#e6efff;padding:8px 22px;border-radius:999px}
+h1{font-size:76px;line-height:1.22;font-weight:800;margin-top:34px;letter-spacing:.01em}
+.chips{display:flex;gap:16px;margin-top:40px;flex-wrap:wrap}
+.chips span{font-size:30px;font-weight:700;background:#fff;border:3px solid #d9dde4;border-radius:14px;padding:10px 22px}
+.foot{position:absolute;left:90px;bottom:44px;font-size:26px;color:#5b6474}
+.card{position:absolute;right:80px;bottom:44px;font-size:72px;font-weight:800;color:#1f6feb;opacity:.14}
+</style></head><body><div class="bar"></div><div class="wrap"><div class="k" id="k"></div><h1 id="t"></h1><div class="chips" id="c"></div></div>
+<div class="foot">登録不要・ブラウザだけで計算（入力は送信されません）</div><div class="card" id="m"></div>
+<script>
+const P={
+ index:{k:"無料の請求書作成ツール",t:"請求書を、<br>ブラウザだけで作る。",c:["インボイス対応","源泉徴収を自動計算","PDF で保存"],m:"¥"},
+ tedori:{k:"フリーランスの報酬計算",t:"手取りから、<br>請求額を逆算する。",c:["源泉徴収 10.21%・20.42%","手取り ⇄ 請求額"],m:"⇄"},
+ "booth-shinkoku":{k:"BOOTH・VRChat クリエイター向け",t:"BOOTH の売上、<br>確定申告いる？",c:["令和8年分の改正に対応","売上・経費を入れるだけ"],m:"?"},
+ niwari:{k:"インボイスの消費税",t:"2割特例で、<br>納税額はいくら？",c:["2割特例・簡易・原則を比較","国税・地方税の内訳"],m:"2割"}};
+const p=P[new URLSearchParams(location.search).get("p")];
+k.textContent=p.k;t.innerHTML=p.t;c.innerHTML=p.c.map(x=>`<span>${x}</span>`).join("");m.textContent=p.m;
+</script></body></html>
